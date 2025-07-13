@@ -6,7 +6,7 @@ from platforms import Platform
 from obstacle import Obstacle
 from goal import Goal
 from hand_controller import HandController
-
+import time
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -20,14 +20,15 @@ platforms = [
     Platform(300, 450, 100, 20),
     Platform(600, 450, 100, 20),
     Platform(900, 400, 100, 20),
-    Platform(1200, 350, 100, 20),
+    Platform(1200, 350, 150, 20),
     Platform(1500, 300, 100, 20),
     Platform(1800, 580, 200, 20)
 ]
+
 obstacles = [
-    Obstacle(700, 560, 40, 20),
-    Obstacle(1300, 560, 40, 20),
-    Obstacle(1600, 560, 40, 20)
+    Obstacle(700, 560, 40, 20, 3, platforms[0]),
+    Obstacle(1300, 330, 40, 20, 3, platforms[4]),
+    Obstacle(1800, 560, 40, 20, 3, platforms[6])
 ]
 goal = Goal(1950, 520, 30, 60)
 hand_control = HandController()
@@ -44,9 +45,9 @@ while running:
     move_left, move_right, jump = hand_control.get_controls()
 
     if move_left:
-        player.world_x = max(0, player.world_x - PLAYER_SPEED)
+        player.x = max(0, player.x - PLAYER_SPEED)
     if move_right:
-        player.world_x = min(LEVEL_LENGTH - player.rect.width, player.world_x + PLAYER_SPEED)
+        player.x = min(LEVEL_LENGTH - player.rect.width, player.x + PLAYER_SPEED)
     if jump:
         player.jump()
 
@@ -54,12 +55,12 @@ while running:
     player.update(platforms)
 
     # Camera follows player but doesn't scroll beyond level bounds
-    if player.world_x < SCREEN_WIDTH // 2:
+    if player.x < SCREEN_WIDTH // 2:
         camera_offset = 0
-    elif player.world_x > LEVEL_LENGTH - SCREEN_WIDTH // 2:
+    elif player.x > LEVEL_LENGTH - SCREEN_WIDTH // 2:
         camera_offset = LEVEL_LENGTH - SCREEN_WIDTH
     else:
-        camera_offset = player.world_x - SCREEN_WIDTH // 2
+        camera_offset = player.x - SCREEN_WIDTH // 2
 
     # Check collisions
     for obstacle in obstacles:
@@ -81,6 +82,7 @@ while running:
     for platform in platforms:
         platform.draw(screen, camera_offset)
     for obstacle in obstacles:
+        obstacle.update(platforms)
         obstacle.draw(screen, camera_offset)
     goal.draw(screen, camera_offset)
     pygame.display.flip()

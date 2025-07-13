@@ -1,10 +1,10 @@
 import pygame
-from config import GRAVITY, PLAYER_SPEED, JUMP_SPEED, SCREEN_WIDTH
+from config import GRAVITY, JUMP_SPEED, SCREEN_WIDTH
 
 class Player:
     def __init__(self, x, y, width=40, height=60):
         self.rect = pygame.Rect(x, y, width, height)
-        self.world_x = x
+        self.x = x
         self.vel_y = 0
         self.on_ground = False
 
@@ -32,12 +32,12 @@ class Player:
                     self.on_ground = True
 
     def get_rect(self):
-        return pygame.Rect(self.world_x, self.rect.y, self.rect.width, self.rect.height)
+        return pygame.Rect(self.x, self.rect.y, self.rect.width, self.rect.height)
 
     def draw(self, screen):
         screen_rect = pygame.Rect(SCREEN_WIDTH // 2, self.rect.y, self.rect.width, self.rect.height)
-        if self.world_x < SCREEN_WIDTH // 2:
-            screen_rect.x = self.world_x
-        elif self.world_x > 2000 - SCREEN_WIDTH // 2:
-            screen_rect.x = self.world_x - (2000 - SCREEN_WIDTH)
+        if self.x < SCREEN_WIDTH // 2:
+            screen_rect.x = self.x
+        elif self.x > 2000 - SCREEN_WIDTH // 2:
+            screen_rect.x = self.x - (2000 - SCREEN_WIDTH)
         pygame.draw.rect(screen, (0, 0, 255), screen_rect)

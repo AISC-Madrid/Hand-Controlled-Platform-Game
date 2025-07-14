@@ -2,29 +2,31 @@
 
 import pygame
 import sys
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, LEVEL_LENGTH, PLAYER_SPEED
+from config import *
 from player import Player
 from platforms import Platform
 #from obstacle import Obstacle
 from goal import Goal
 from hand_controller import HandController
+# REMOVE THIS LINE: from load_image import start_image
 import time
 
-MAX_TIME_MS = 20000  # Time limit
-
 pygame.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) # Corrected set_mode
 pygame.display.set_caption("Mini Mario")
 clock = pygame.time.Clock()
 
 # Create font for text
 font = pygame.font.SysFont(None, 36)  # You can change size and type
 
-# Game States
-START_SCREEN = 0
-PLAYING = 1
-WIN_SCREEN = 2
-GAME_OVER_SCREEN = 3
+# Load your start screen image d
+try:
+    start_image = pygame.image.load('images/AISC logo.png').convert_alpha()
+    # Scale the image to fit the screen
+    start_image = pygame.transform.scale(start_image, (100, 100))
+except pygame.error as e:
+    print(f"Error loading start image: {e}")
+    start_image = None # Handle case where image is not found
 
 game_state = START_SCREEN
 
@@ -64,24 +66,27 @@ while running:
 
     # Always update hand control for camera window to be active
     hand_control.update()
-    # No need to get controls unless in PLAYING state for game logic
-    # move_left, move_right, jump = hand_control.get_controls()
-
 
     if game_state == START_SCREEN:
-        screen.fill((0, 0, 0))
+        screen.fill((0, 0, 0)) 
+        if start_image:
+            image_rect = start_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
+            screen.blit(start_image, image_rect)
+
         start_text = font.render("Press SPACE to Start", True, (255, 255, 255))
-        screen.blit(start_text, (SCREEN_WIDTH // 2 - start_text.get_width() // 2, SCREEN_HEIGHT // 2 - start_text.get_height() // 2))
+        # Position the text relative to the image or screen
+        # Adjust text_position_y to place the text where you want it on top of the image
+        text_position_y = SCREEN_HEIGHT // 2 + (start_image.get_height() // 2 if start_image else 0) - 50 # Example: adjust as needed
+        screen.blit(start_text, (SCREEN_WIDTH // 2 - start_text.get_width() // 2, text_position_y))
+
 
     elif game_state == PLAYING:
         clock.tick(FPS)
-
         # Remaining time calculation
         elapsed_ms = pygame.time.get_ticks() - start_ticks
         remaining_ms = max(0, MAX_TIME_MS - elapsed_ms)
 
         if remaining_ms == 0:
-            print("Se acabó el tiempo. Game Over!")
             game_state = GAME_OVER_SCREEN
 
         # Get controls only when playing
@@ -124,6 +129,9 @@ while running:
 
         # Draw everything
         screen.fill((0, 0, 0))  # Black background
+        if start_image:
+            image_rect = start_image.get_rect(center=(SCREEN_WIDTH - SCREEN_WIDTH // 10, SCREEN_HEIGHT // 9))
+            screen.blit(start_image, image_rect)
         player.draw(screen)
         for platform in platforms:
             platform.draw(screen, camera_offset)
@@ -154,6 +162,9 @@ while running:
 
     elif game_state == GAME_OVER_SCREEN:
         screen.fill((0, 0, 0))
+        if start_image:
+            image_rect = start_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
+            screen.blit(start_image, image_rect)
         game_over_text = font.render("Game Over!", True, (255, 0, 0))
         restart_text = font.render("Press 'R' to Restart or 'M' for Main Menu", True, (255, 255, 255))
         screen.blit(game_over_text, (SCREEN_WIDTH // 2 - game_over_text.get_width() // 2, SCREEN_HEIGHT // 2 - 50))

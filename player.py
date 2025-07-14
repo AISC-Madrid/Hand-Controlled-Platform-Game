@@ -40,4 +40,4 @@ class Player:
             screen_rect.x = self.x
         elif self.x > 2000 - SCREEN_WIDTH // 2:
             screen_rect.x = self.x - (2000 - SCREEN_WIDTH)
-        pygame.draw.rect(screen, (0, 0, 255), screen_rect)
+        pygame.draw.rect(screen, (235, 23, 142), screen_rect)

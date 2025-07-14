@@ -7,5 +7,5 @@ class Platform:
 
     def draw(self, screen, camera_offset):
         draw_rect = pygame.Rect(self.rect.x - camera_offset, self.rect.y, self.rect.width, self.rect.height)
-        pygame.draw.rect(screen, (150, 75, 0), draw_rect)
+        pygame.draw.rect(screen, (32, 204, 241), draw_rect)
 

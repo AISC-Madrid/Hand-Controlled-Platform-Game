@@ -1,3 +1,6 @@
+#Game done by Hugo Centeno Sanz & Lauren Gallego Ropero
+# AISC Madrid July 2025
+
 #Note: remove commented lines of code to add an opponent
 
 import pygame
@@ -155,6 +158,9 @@ while running:
 
     elif game_state == WIN_SCREEN:
         screen.fill((0, 0, 0))
+        if start_image:
+            image_rect = start_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
+            screen.blit(start_image, image_rect)
         win_text = font.render("You Win!", True, (0, 255, 0))
         restart_text = font.render("Press 'R' to Restart or 'M' for Main Menu", True, (255, 255, 255))
         screen.blit(win_text, (SCREEN_WIDTH // 2 - win_text.get_width() // 2, SCREEN_HEIGHT // 2 - 50))

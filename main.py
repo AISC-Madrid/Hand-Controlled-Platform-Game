@@ -62,6 +62,12 @@ while running:
                 elif event.key == pygame.K_m: # Main Menu
                     game_state = START_SCREEN
 
+    # Always update hand control for camera window to be active
+    hand_control.update()
+    # No need to get controls unless in PLAYING state for game logic
+    # move_left, move_right, jump = hand_control.get_controls()
+
+
     if game_state == START_SCREEN:
         screen.fill((0, 0, 0))
         start_text = font.render("Press SPACE to Start", True, (255, 255, 255))
@@ -78,7 +84,7 @@ while running:
             print("Se acabó el tiempo. Game Over!")
             game_state = GAME_OVER_SCREEN
 
-        hand_control.update()
+        # Get controls only when playing
         move_left, move_right, jump = hand_control.get_controls()
 
         if move_left:

@@ -1,17 +1,20 @@
 import pygame
-from config import GRAVITY, JUMP_SPEED, SCREEN_WIDTH
+import settings
+from config import GRAVITY
 
 class Player:
-    def __init__(self, x, y, width=40, height=60):
-        self.rect = pygame.Rect(x, y, width, height)
+    def __init__(self, x, y, width=30, height=60):
+        scale_x = settings.get_width_ratio()
+        scale_y = settings.get_height_ratio()
+
+        self.rect = pygame.Rect(x, y, width * scale_x, height * scale_y)
         self.x = x
         self.vel_y = 0
         self.on_ground = False
 
-
     def jump(self):
         if self.on_ground:
-            self.vel_y = -JUMP_SPEED
+            self.vel_y = -settings.get_jump_speed()
             self.on_ground = False
 
     def apply_gravity(self):
@@ -35,9 +38,14 @@ class Player:
         return pygame.Rect(self.x, self.rect.y, self.rect.width, self.rect.height)
 
     def draw(self, screen):
-        screen_rect = pygame.Rect(SCREEN_WIDTH // 2, self.rect.y, self.rect.width, self.rect.height)
-        if self.x < SCREEN_WIDTH // 2:
+        W = settings.WINDOW_WIDTH
+        LEVEL_LENGTH = settings.get_level_length()
+        screen_rect = pygame.Rect(W // 2, self.rect.y, self.rect.width, self.rect.height)
+        if self.x < W // 2:
             screen_rect.x = self.x
-        elif self.x > 2000 - SCREEN_WIDTH // 2:
-            screen_rect.x = self.x - (2000 - SCREEN_WIDTH)
+        elif self.x > LEVEL_LENGTH - W // 2:
+            screen_rect.x = self.x - (LEVEL_LENGTH - W)
+        else:
+            screen_rect.x = W // 2
+
         pygame.draw.rect(screen, (235, 23, 142), screen_rect)

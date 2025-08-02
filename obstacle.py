@@ -38,18 +38,19 @@ class Obstacle:
             self.jump()
             self.jump_timer = 0
 
-    def check_collision(self):
-        self.on_ground = False
-        if self.rect.colliderect(self.platform.rect):
-            if self.vel_y > 0:
-                self.rect.bottom = self.platform.rect.top
-                self.vel_y = 0
-                self.on_ground = True
+    def check_collision(self, platforms):
+        if self.vel_y > 0:  # Only check if falling
+            for platform in platforms:
+                if self.rect.colliderect(platform.rect):
+                    self.rect.bottom = platform.rect.top
+                    self.vel_y = 0
+                    self.on_ground = True
+                    return
 
     def update(self, platforms):
         self.move()
         self.apply_gravity()
-        self.check_collision()
+        self.check_collision(platforms)
 
 
 

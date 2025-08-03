@@ -1,7 +1,5 @@
-""" This is ASIC Madrid's presentation game
-Authors: Lauren Gallego & Hugo Centeno"""
-
-
+#This is ASIC Madrid's presentation game
+#Authors: Lauren Gallego & Hugo Centeno
 
 import pygame
 import sys
@@ -22,8 +20,10 @@ screen = pygame.display.set_mode((0, 0))
 settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT = screen.get_size()
 
 # Import arcade font
-font_path = os.path.join("fonts", "Arcade-Classic.ttf")
-font = pygame.font.Font(font_path, 22)
+font_path = os.path.join("fonts", "Arcade Classic.ttf")
+font_title = pygame.font.Font(font_path, 64)
+font_blinking = pygame.font.Font(font_path, 32)
+font_time = pygame.font.Font(font_path, 26)
 
 # Dimensions
 W, H = settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT
@@ -95,15 +95,13 @@ while running:
         screen.fill(COLOR_BG)
 
         # Title
-        title_text = font.render("★ MINI MARIO ★", True, COLOR_ACCENT)
+        title_text = font_title.render("MINI MARIO", True, COLOR_ACCENT)
         title_rect = title_text.get_rect(center=(W // 2, H // 5))
-        pygame.draw.rect(screen, COLOR_BOX, title_rect.inflate(40, 30), border_radius=12)
-        pygame.draw.rect(screen, COLOR_ACCENT, title_rect.inflate(40, 30), 4, border_radius=12)
         screen.blit(title_text, title_rect)
 
         # Blinking Start Prompt
         if int(time.time() * 2) % 2 == 0:
-            start_msg = font.render("PRESS SPACE TO START", True, COLOR_TEXT)
+            start_msg = font_blinking.render("PRESS SPACE TO START", True, COLOR_TEXT)
             screen.blit(start_msg, (W // 2 - start_msg.get_width() // 2, H // 2 + 50))
 
         # Optional logo
@@ -154,8 +152,8 @@ while running:
         goal.draw(screen, camera_offset)
         seconds = remaining_ms // 1000
         milliseconds = remaining_ms % 1000
-        time_text = f"Tiempo: {seconds:02d},{milliseconds:03d}"
-        text_surface = font.render(time_text, True, (255, 255, 255))
+        time_text = f"Time: {seconds:02d},{milliseconds:03d}"
+        text_surface = font_time.render(time_text, True, (255, 255, 255))
         screen.blit(text_surface, (20, 20))
 
 
@@ -164,35 +162,32 @@ while running:
         screen.fill(COLOR_BG)
 
         # Title
-        msg_text = font.render("YOU WIN!", True, (0, 255, 0))
+        msg_text = font_title.render("YOU WIN!", True, (0, 255, 0))
         msg_rect = msg_text.get_rect(center=(W // 2, H // 3))
-        pygame.draw.rect(screen, COLOR_BOX, msg_rect.inflate(40, 30), border_radius=12)
-        pygame.draw.rect(screen, (0, 255, 0), msg_rect.inflate(40, 30), 4, border_radius=12)
         screen.blit(msg_text, msg_rect)
 
         # Restart Prompt
-        prompt = font.render("R - RESTART   |   M - MENU", True, COLOR_TEXT)
-        screen.blit(prompt, (W // 2 - prompt.get_width() // 2, msg_rect.bottom + 40))
+        if int(time.time() * 2) % 2 == 0:
+            prompt = font_blinking.render("R - RESTART      M - MENU", True, COLOR_TEXT)
+            screen.blit(prompt, (W // 2 - prompt.get_width() // 2, H // 2 + 50))
 
         if start_image:
             image_rect = start_image.get_rect(center=(W // 2, H - 120))
             screen.blit(start_image, image_rect)
-
 
     elif game_state == GAME_OVER_SCREEN:
 
         screen.fill(COLOR_BG)
 
         # Title
-        msg_text = font.render("GAME OVER", True, (255, 0, 0))
+        msg_text = font_title.render("GAME OVER", True, (255, 0, 0))
         msg_rect = msg_text.get_rect(center=(W // 2, H // 3))
-        pygame.draw.rect(screen, COLOR_BOX, msg_rect.inflate(40, 30), border_radius=12)
-        pygame.draw.rect(screen, (255, 0, 0), msg_rect.inflate(40, 30), 4, border_radius=12)
         screen.blit(msg_text, msg_rect)
 
         # Restart Prompt
-        prompt = font.render("R - RESTART   |   M - MENU", True, COLOR_TEXT)
-        screen.blit(prompt, (W // 2 - prompt.get_width() // 2, msg_rect.bottom + 40))
+        if int(time.time() * 2) % 2 == 0:
+            prompt = font_blinking.render("R - RESTART      M - MENU", True, COLOR_TEXT)
+            screen.blit(prompt, (W // 2 - prompt.get_width() // 2, H // 2 + 50))
 
         if start_image:
             image_rect = start_image.get_rect(center=(W // 2, H - 120))

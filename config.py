@@ -10,7 +10,7 @@ GAME_OVER_SCREEN = 3
 # Time limit in milliseconds
 MAX_TIME_MS = 20000
 
-
+# Colors
 COLOR_BG = (20, 20, 20)
 COLOR_TEXT = (255, 255, 255)
 COLOR_ACCENT = (235, 23, 142)

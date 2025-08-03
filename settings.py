@@ -9,7 +9,7 @@ def get_height_ratio():
     return WINDOW_HEIGHT / 600
 
 def get_player_speed():
-    return 4 * get_width_ratio()
+    return 6 * get_width_ratio()
 
 def get_jump_speed():
     return 10 * get_height_ratio()

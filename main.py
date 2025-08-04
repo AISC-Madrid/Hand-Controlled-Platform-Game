@@ -28,7 +28,7 @@ font_time = pygame.font.Font(font_path, 26)
 # Dimensions
 W, H = settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT
 
-pygame.display.set_caption("Mini Mario")
+pygame.display.set_caption("Hand-Controlled Platform Game")
 clock = pygame.time.Clock()
 
 # Logo

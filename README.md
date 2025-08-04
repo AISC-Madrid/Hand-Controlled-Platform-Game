@@ -3,7 +3,7 @@
 This game was used to promote the AI students association AISC Madrid during the event Welcome Day 2025-2026 at University Carlos III Madrid.
 
 ## Description 
-Control a 2D platformer game using your **hand gestures** through your webcam!  
+Control a 2D platform game using your hand gestures through your webcam!  
 
 ## Demo
 
@@ -35,3 +35,8 @@ pip install -r requirements.txt
 
 # Run the game
 python main.py
+```
+Authors: Hugo Centeno Sanz & Lauren Gallego Ropero
+
+Visit our website to stay updated on all our events!
+https://aiscmadrid.com/

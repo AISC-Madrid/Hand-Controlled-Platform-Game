@@ -7,7 +7,7 @@ Control a 2D platform game using your hand gestures through your webcam!
 
 ## Demo
 
-<video src="Handgame.mp4" width="600" muted></video>
+![Demo](Handgame.gif)
 
 
 ##  Hand Gesture Controls

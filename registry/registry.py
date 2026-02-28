@@ -58,7 +58,7 @@ class UserRegistry:
         if not self.validate_email(email):
             return False, 'Invalid email format.'
         if self.exists(email):
-            return False, 'Email already registered.'
+            return True, 'Email already registered.'
 
         try:
             self._write_header_if_missing()

@@ -126,6 +126,9 @@ while running:
         # Keyboard input
         if event.type == pygame.KEYDOWN:
             if game_state == START_SCREEN:
+                if event.key == pygame.K_p and landing_active_field is None:
+                    reset_game()
+                    continue
                 if landing_active_field:
                     if event.key == pygame.K_BACKSPACE:
                         if landing_active_field == 'name':
@@ -133,7 +136,6 @@ while running:
                         else:
                             landing_email = landing_email[:-1]
                     elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
-                        # If on name, move to email; if on email, submit
                         if landing_active_field == 'name':
                             landing_active_field = 'email'
                         else:
@@ -157,6 +159,9 @@ while running:
                     reset_game()
                 elif event.key == pygame.K_m:
                     game_state = START_SCREEN
+                elif event.key == pygame.K_c:
+                    # Quit the game from the final screens (C - QUIT)
+                    running = False
 
     hand_control.update()
 
@@ -274,7 +279,7 @@ while running:
 
         # Restart Prompt
         if int(time.time() * 2) % 2 == 0:
-            prompt = font_blinking.render("R - RESTART      M - MENU", True, COLOR_TEXT)
+            prompt = font_blinking.render("R - RESTART      M - MENU      C - QUIT", True, COLOR_TEXT)
             screen.blit(prompt, (W // 2 - prompt.get_width() // 2, H // 2 + 50))
 
         if start_image:
@@ -292,7 +297,7 @@ while running:
 
         # Restart Prompt
         if int(time.time() * 2) % 2 == 0:
-            prompt = font_blinking.render("R - RESTART      M - MENU", True, COLOR_TEXT)
+            prompt = font_blinking.render("R - RESTART      M - MENU      C - QUIT", True, COLOR_TEXT)
             screen.blit(prompt, (W // 2 - prompt.get_width() // 2, H // 2 + 50))
 
         if start_image:

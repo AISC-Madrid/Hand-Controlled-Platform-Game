@@ -11,9 +11,20 @@ from hand_controller import HandController
 import settings
 import os
 import time
+import csv
+from registry.registry import UserRegistry
 
 # Initialize game
 pygame.init()
+
+# System cursors (create once)
+try:
+    cursor_arrow = pygame.cursors.Cursor(pygame.SYSTEM_CURSOR_ARROW)
+    cursor_ibeam = pygame.cursors.Cursor(pygame.SYSTEM_CURSOR_IBEAM)
+    cursor_hand = pygame.cursors.Cursor(pygame.SYSTEM_CURSOR_HAND)
+except Exception:
+    cursor_arrow = cursor_ibeam = cursor_hand = None
+current_cursor = None
 
 # Set screen to full size
 screen = pygame.display.set_mode((0, 0))
@@ -40,6 +51,15 @@ except pygame.error as e:
     start_image = None
 
 game_state = START_SCREEN
+
+# Landing form state
+landing_name = ""
+landing_email = ""
+landing_active_field = None  # None, 'name', or 'email'
+landing_error = ""
+
+# User registry (handles CSV, duplication checks and validation)
+user_registry = UserRegistry()
 
 def reset_game():
     """
@@ -76,13 +96,62 @@ hand_control = HandController()
 # Game loop
 running = True
 while running:
+    # Precompute landing form rectangles when on start screen
+    if game_state == START_SCREEN:
+        form_width = int(W * 0.6)
+        form_x = (W - form_width) // 2
+        form_y = H // 2 - 80
+        name_rect = pygame.Rect(form_x, form_y, form_width, 40)
+        email_rect = pygame.Rect(form_x, form_y + 60, form_width, 40)
+        start_btn_rect = pygame.Rect(form_x + form_width // 2 - 60, form_y + 130, 120, 40)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        # Mouse clicks: select field or press start
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if game_state == START_SCREEN:
+                mx, my = event.pos
+                if name_rect.collidepoint(mx, my):
+                    landing_active_field = 'name'
+                elif email_rect.collidepoint(mx, my):
+                    landing_active_field = 'email'
+                elif start_btn_rect.collidepoint(mx, my):
+                    success, msg = user_registry.add_user(landing_name.strip(), landing_email.strip())
+                    landing_error = '' if success else msg
+                    if success:
+                        reset_game()
+
+        # Keyboard input
         if event.type == pygame.KEYDOWN:
             if game_state == START_SCREEN:
-                if event.key == pygame.K_SPACE:
-                    reset_game()
+                if landing_active_field:
+                    if event.key == pygame.K_BACKSPACE:
+                        if landing_active_field == 'name':
+                            landing_name = landing_name[:-1]
+                        else:
+                            landing_email = landing_email[:-1]
+                    elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                        # If on name, move to email; if on email, submit
+                        if landing_active_field == 'name':
+                            landing_active_field = 'email'
+                        else:
+                            success, msg = user_registry.add_user(landing_name.strip(), landing_email.strip())
+                            landing_error = '' if success else msg
+                            if success:
+                                reset_game()
+                    else:
+                        ch = event.unicode
+                        if ch and len(ch) == 1:
+                            if landing_active_field == 'name':
+                                landing_name += ch
+                            else:
+                                landing_email += ch
+                else:
+                    # if no field selected, allow selecting with Enter to focus name
+                    if event.key == pygame.K_RETURN:
+                        landing_active_field = 'name'
             elif game_state in (WIN_SCREEN, GAME_OVER_SCREEN):
                 if event.key == pygame.K_r:
                     reset_game()
@@ -90,6 +159,22 @@ while running:
                     game_state = START_SCREEN
 
     hand_control.update()
+
+    # Update cursor based on hover over form elements (start screen)
+    if game_state == START_SCREEN:
+        try:
+            mx, my = pygame.mouse.get_pos()
+            desired = cursor_arrow
+            if name_rect.collidepoint(mx, my) or email_rect.collidepoint(mx, my):
+                desired = cursor_ibeam
+            elif start_btn_rect.collidepoint(mx, my):
+                desired = cursor_hand
+
+            if desired is not None and desired is not current_cursor:
+                pygame.mouse.set_cursor(desired)
+                current_cursor = desired
+        except Exception:
+            pass
 
     if game_state == START_SCREEN:
         screen.fill(COLOR_BG)
@@ -99,10 +184,31 @@ while running:
         title_rect = title_text.get_rect(center=(W // 2, H // 5))
         screen.blit(title_text, title_rect)
 
-        # Blinking Start Prompt
-        if int(time.time() * 2) % 2 == 0:
-            start_msg = font_blinking.render("PRESS SPACE TO START", True, COLOR_TEXT)
-            screen.blit(start_msg, (W // 2 - start_msg.get_width() // 2, H // 2 + 50))
+        # Landing form
+        # Draw name field
+        pygame.draw.rect(screen, (255, 255, 255) if landing_active_field == 'name' else (200, 200, 200), name_rect, 0)
+        name_label = font_time.render('Name:', True, (32, 204, 241))
+        screen.blit(name_label, (name_rect.x + 8, name_rect.y - 24))
+        name_text_surf = font_time.render(landing_name or '', True, (0, 0, 0))
+        screen.blit(name_text_surf, (name_rect.x + 8, name_rect.y + 6))
+
+        # Draw email field
+        pygame.draw.rect(screen, (255, 255, 255) if landing_active_field == 'email' else (200, 200, 200), email_rect, 0)
+        email_label = font_time.render('Email:', True, (32, 204, 241))
+        screen.blit(email_label, (email_rect.x + 8, email_rect.y - 24))
+        email_text_surf = font_time.render(landing_email or '', True, (0, 0, 0))
+        screen.blit(email_text_surf, (email_rect.x + 8, email_rect.y + 6))
+
+        # Draw start button
+        pygame.draw.rect(screen, COLOR_ACCENT, start_btn_rect)
+        btn_text = font_blinking.render('START', True, COLOR_TEXT)
+        btn_rect = btn_text.get_rect(center=start_btn_rect.center)
+        screen.blit(btn_text, btn_rect)
+
+        # Show validation / duplicate error (if any)
+        if landing_error:
+            err_surf = font_time.render(landing_error, True, (255, 50, 50))
+            screen.blit(err_surf, (form_x, start_btn_rect.y + 50))
 
         # Optional logo
         if start_image:

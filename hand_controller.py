@@ -5,7 +5,8 @@ class HandController:
     def __init__(self, cam_index=0):
         self.cap = cv2.VideoCapture(cam_index)
         self.mp_hands = mp.solutions.hands
-        self.hands = self.mp_hands.Hands()
+        # Use a lighter configuration: single hand, lower model complexity
+        self.hands = self.mp_hands.Hands(max_num_hands=1, model_complexity=0)
         self.results = None
         self.move_left = False
         self.move_right = False

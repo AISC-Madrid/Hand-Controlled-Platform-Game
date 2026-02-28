@@ -12,6 +12,8 @@ import settings
 import os
 import time
 import csv
+import math
+import random
 from registry.registry import UserRegistry
 
 # Initialize game
@@ -51,6 +53,39 @@ except pygame.error as e:
     start_image = None
 
 game_state = START_SCREEN
+
+# Decorative particle background
+PARTICLE_COUNT = 60
+particles = []
+
+def _init_particles():
+    particles.clear()
+    for _ in range(PARTICLE_COUNT):
+        x = random.randrange(0, W)
+        y = random.randrange(0, H)
+        vx = random.uniform(-0.2, 0.2)
+        vy = random.uniform(0.3, 1.0)
+        size = random.randint(1, 3)
+        particles.append({'x': x, 'y': y, 'vx': vx, 'vy': vy, 'size': size})
+
+def _update_particles(dt):
+    for p in particles:
+        p['x'] += p['vx'] * dt
+        p['y'] += p['vy'] * dt
+        if p['y'] > H:
+            p['y'] = 0
+            p['x'] = random.randrange(0, W)
+        if p['x'] < 0:
+            p['x'] = W
+        elif p['x'] > W:
+            p['x'] = 0
+
+def _draw_particles(surface):
+    for p in particles:
+        pygame.draw.circle(surface, (255, 255, 255), (int(p['x']), int(p['y'])), p['size'])
+
+# Initialize particles now that W,H are known
+_init_particles()
 
 # Landing form state
 landing_name = ""
@@ -96,6 +131,9 @@ hand_control = HandController()
 # Game loop
 running = True
 while running:
+    # tick once per loop to compute dt (controls global frame rate)
+    dt_ms = clock.tick(FPS)
+    dt = max(1.0, dt_ms / 16.0)
     # Precompute landing form rectangles when on start screen
     if game_state == START_SCREEN:
         form_width = int(W * 0.6)
@@ -184,10 +222,19 @@ while running:
     if game_state == START_SCREEN:
         screen.fill(COLOR_BG)
 
-        # Title
-        title_text = font_title.render("MINI MARIO", True, COLOR_ACCENT)
-        title_rect = title_text.get_rect(center=(W // 2, H // 5))
-        screen.blit(title_text, title_rect)
+        # Decorative particles
+        _update_particles(dt)
+        _draw_particles(screen)
+
+        # Pulsing Title (appearing/disappearing)
+        alpha = int((math.sin(time.time() * 2) + 1) / 2 * 255)
+        title_surface = font_title.render("MINI MARIO", True, COLOR_ACCENT).convert_alpha()
+        try:
+            title_surface.set_alpha(alpha)
+        except Exception:
+            pass
+        title_rect = title_surface.get_rect(center=(W // 2, H // 5))
+        screen.blit(title_surface, title_rect)
 
         # Landing form
         # Draw name field
@@ -222,7 +269,6 @@ while running:
 
 
     elif game_state == PLAYING:
-        clock.tick(FPS)
         elapsed_ms = pygame.time.get_ticks() - start_ticks
         remaining_ms = max(0, MAX_TIME_MS - elapsed_ms)
         if remaining_ms == 0:
@@ -253,8 +299,15 @@ while running:
             game_state = WIN_SCREEN
 
         screen.fill((0, 0, 0))
+        # Decorative particles in game
+        _update_particles(dt)
+        _draw_particles(screen)
+
         if start_image:
             image_rect = start_image.get_rect(center=(W - W // 10, H // 9))
+            # small bobbing for the logo
+            bob = int(math.sin(time.time() * 2) * 6)
+            image_rect.centery += bob
             screen.blit(start_image, image_rect)
         player.draw(screen)
         for platform in platforms:

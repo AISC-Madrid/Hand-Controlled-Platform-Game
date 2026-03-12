@@ -18,7 +18,7 @@ Control a 2D platform game using your hand gestures through your webcam!
 
 ## Tools and versions used
 
-- [Python 3.12.9](https://www.python.org/)
+- [Python 3.11.9](https://www.python.org/)
 - [MediaPipe Hands 0.10.14](https://google.github.io/mediapipe/solutions/hands.html)
 - [OpenCV 4.12.0](https://opencv.org/)
 - [Pygame 2.6.1](https://www.pygame.org/news)

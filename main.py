@@ -14,7 +14,7 @@ import time
 import csv
 import math
 import random
-from registry.registry import UserRegistry
+from registry.registry import UserRegistry, Leaderboard
 
 # Initialize game
 pygame.init()
@@ -93,14 +93,22 @@ landing_email = ""
 landing_active_field = None  # None, 'name', or 'email'
 landing_error = ""
 
+# Current user tracking (persists across restarts until a new email is entered)
+current_user_name = ""
+current_user_email = ""
+
+# Win time (set on WIN transition, shown on WIN_SCREEN)
+win_time_ms = None
+
 # User registry (handles CSV, duplication checks and validation)
 user_registry = UserRegistry()
+leaderboard = Leaderboard()
 
 def reset_game():
     """
     This function resets the game state and initializes the game objects.
     """
-    global player, platforms, goal, start_ticks, game_state
+    global player, platforms, goal, start_ticks, game_state, win_time_ms
 
     scale_x = settings.get_width_ratio()
     scale_y = settings.get_height_ratio()
@@ -123,6 +131,7 @@ def reset_game():
     goal = Goal(1950 * scale_x, floor_y - 60 * scale_y, 30 * scale_x, 60 * scale_y)
 
     start_ticks = pygame.time.get_ticks()
+    win_time_ms = None
     game_state = PLAYING
 
 # Import Computer Vision system
@@ -138,7 +147,7 @@ while running:
     if game_state == START_SCREEN:
         form_width = int(W * 0.6)
         form_x = (W - form_width) // 2
-        form_y = H // 2 - 80
+        form_y = H // 2 - 120
         name_rect = pygame.Rect(form_x, form_y, form_width, 40)
         email_rect = pygame.Rect(form_x, form_y + 60, form_width, 40)
         start_btn_rect = pygame.Rect(form_x + form_width // 2 - 60, form_y + 130, 120, 40)
@@ -159,6 +168,8 @@ while running:
                     success, msg = user_registry.add_user(landing_name.strip(), landing_email.strip())
                     landing_error = '' if success else msg
                     if success:
+                        current_user_name = landing_name.strip()
+                        current_user_email = landing_email.strip().lower()
                         reset_game()
 
         # Keyboard input
@@ -180,6 +191,8 @@ while running:
                             success, msg = user_registry.add_user(landing_name.strip(), landing_email.strip())
                             landing_error = '' if success else msg
                             if success:
+                                current_user_name = landing_name.strip()
+                                current_user_email = landing_email.strip().lower()
                                 reset_game()
                     else:
                         ch = event.unicode
@@ -262,6 +275,25 @@ while running:
             err_surf = font_time.render(landing_error, True, (255, 50, 50))
             screen.blit(err_surf, (form_x, start_btn_rect.y + 50))
 
+        # ── Leaderboard ──
+        lb_y = start_btn_rect.y + 90
+        lb_header = font_blinking.render("LEADERBOARD", True, COLOR_ACCENT)
+        screen.blit(lb_header, lb_header.get_rect(center=(W // 2, lb_y)))
+        lb_y += 40
+
+        top_scores = leaderboard.get_top(5)
+        if top_scores:
+            for entry in top_scores:
+                secs = entry['best_time_ms'] // 1000
+                ms = entry['best_time_ms'] % 1000
+                row_text = f"{entry['rank']}.  {entry['name']}   {secs:02d},{ms:03d}"
+                row_surf = font_time.render(row_text, True, COLOR_TEXT)
+                screen.blit(row_surf, row_surf.get_rect(center=(W // 2, lb_y)))
+                lb_y += 30
+        else:
+            no_scores = font_time.render("No scores yet", True, (150, 150, 150))
+            screen.blit(no_scores, no_scores.get_rect(center=(W // 2, lb_y)))
+
         # Optional logo
         if start_image:
             image_rect = start_image.get_rect(center=(W // 2, H - 150))
@@ -296,6 +328,9 @@ while running:
             game_state = GAME_OVER_SCREEN
 
         if player.get_rect().colliderect(goal.rect):
+            win_time_ms = pygame.time.get_ticks() - start_ticks
+            if current_user_email:
+                leaderboard.record_time(current_user_email, current_user_name, win_time_ms)
             game_state = WIN_SCREEN
 
         screen.fill((0, 0, 0))
@@ -329,6 +364,13 @@ while running:
         msg_text = font_title.render("YOU WIN!", True, (0, 255, 0))
         msg_rect = msg_text.get_rect(center=(W // 2, H // 3))
         screen.blit(msg_text, msg_rect)
+
+        # Show completion time
+        if win_time_ms is not None:
+            wsecs = win_time_ms // 1000
+            wms = win_time_ms % 1000
+            time_surf = font_blinking.render(f"Time:  {wsecs:02d},{wms:03d}", True, COLOR_TEXT)
+            screen.blit(time_surf, time_surf.get_rect(center=(W // 2, H // 3 + 60)))
 
         # Restart Prompt
         if int(time.time() * 2) % 2 == 0:
